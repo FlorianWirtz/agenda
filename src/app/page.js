@@ -1,95 +1,66 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+import React, { Fragment, useState, useEffect } from 'react';
+import Formulario from './components/Formulario'; 
+import Cita from "./components/Cita"; 
 
-export default function Home() {
+
+import { v4 as uuidv4 } from 'uuid';
+
+function App() {
+  // Estado para las citas
+  const [citas, guardarCitas] = useState([]);
+
+  // Use Effect para cargar citas desde local storage
+  useEffect(() => {
+    // Verificar si window está definido
+    if (typeof window !== 'undefined') {
+      const citasIniciales = JSON.parse(localStorage.getItem('citas')) || [];
+      guardarCitas(citasIniciales);
+    }
+  }, []); // Solo se ejecuta una vez al montar el componente
+
+  // Use Effect para guardar citas en local storage cuando cambian
+  useEffect(() => {
+    // Verificar si window está definido
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('citas', JSON.stringify(citas));
+    }
+  }, [citas]);
+
+  // Función que toma las citas actuales y agrega la nueva
+  const crearCita = (cita) => {
+    const nuevaCita = { ...cita, id: uuidv4() }; // Agregar un ID único
+    guardarCitas([...citas, nuevaCita]);
+  };
+
+  // Función que elimina una cita por su id
+  const eliminarCita = (id) => {
+    const nuevasCitas = citas.filter(cita => cita.id !== id);
+    guardarCitas(nuevasCitas);
+  };
+
+  // Mensaje condicional
+  const titulo = citas.length === 0 ? 'No hay citas' : 'Administra tus Citas';
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+    <Fragment>
+      <h1>Administrador de Pacientes</h1>
+      <div className="container">
+        <div className="column">
+          <Formulario crearCita={crearCita} />
         </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        <div className="column">
+          <h2>{titulo}</h2>
+          {citas.map(cita => (
+            <Cita
+              key={cita.id}
+              cita={cita}
+              eliminarCita={eliminarCita}
+            />
+          ))}
+        </div>
+      </div>
+    </Fragment>
   );
 }
+export default App;
